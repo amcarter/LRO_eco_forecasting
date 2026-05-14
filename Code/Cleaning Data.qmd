@@ -1,0 +1,330 @@
+---
+title: "Data Cleaning"
+format: html
+editor: visual
+---
+
+## Overview of Document
+
+All the data is downloaded from <https://lro.hydroserver.org/visualize-data> using the sites: Tony Grove, Mendon Rd, Utah Water Research Laboratory, Franklin Basin, and Main Street Bridge. Variables downloaded are dissolved oxygen, pH, discharge, turbidity, and water level. Each of these were downloaded on 2/16/2026. Data was then split into testing and training, where training was from the start of the observations to 2/14/2024. The testing is from 2/15/2024 to 2/16/2026.
+
+## Oxygen
+
+```{r}
+library(readr)
+
+O2_Franklin_Basin <- read_csv("Other/Downloaded Data/datastreams_oxygen/oxygen_Franklin_Basin.csv", 
+    skip = 81)
+
+O2_Main_St <- read.csv("Other/Downloaded Data/datastreams_oxygen/Other/Downloaded Data/oxygen_Main_St.csv", 
+    skip = 81)
+
+O2_Mendon <- read_csv("Other/Downloaded Data/datastreams_oxygen/oxygen_Mendon.csv", 
+    skip = 81)
+
+O2_Tony_Grove <- read_csv("Other/Downloaded Data/datastreams_oxygen/oxygen_Tony_Grove.csv", 
+    skip = 81)
+
+O2_Water_Lab <- read_csv("Other/Downloaded Data/datastreams_oxygen/oxygen_Water_Lab.csv", 
+    skip = 81)
+```
+
+```{r}
+
+Oxygen_Franklin <- data.frame(
+  date = O2_Franklin_Basin$ResultTime,
+  DO = O2_Franklin_Basin$Result,
+  source = "Franklin"
+)
+Oxygen_Main_St <- data.frame(
+  date = O2_Main_St$ResultTime,
+  DO = O2_Main_St$Result,
+  source = "Main St"
+)
+Oxygen_Mendon <- data.frame(
+  date = O2_Mendon$ResultTime,
+  DO = O2_Mendon$Result,
+  source = "Mendon"
+)
+Oxygen_TonyGrove <- data.frame(
+  date = O2_Tony_Grove$ResultTime,
+  DO = O2_Tony_Grove$Result,
+  source = "Tony Grove"
+)
+Oxygen_Water_Lab <- data.frame(
+  date = O2_Water_Lab$ResultTime,
+  DO = O2_Water_Lab$Result,
+  source = "Water Lab"
+)
+
+Logan_River_Oxygen <- rbind(Oxygen_Franklin,
+                            Oxygen_Main_St,
+                            Oxygen_Mendon,
+                            Oxygen_TonyGrove,
+                            Oxygen_Water_Lab)
+
+#Saving Oxygen Data Set
+#save(Logan_River_Oxygen, file = "Logan_River_Oxygen.RData")
+
+```
+
+## pH
+
+```{r}
+
+
+pH_Franklin_Basin <- read_csv("Other/Downloaded Data/datastreams_pH/pH_Franklin_Basin.csv", 
+    skip = 81)
+
+pH_Main_St_Bridge <- read_csv("Other/Downloaded Data/datastreams_pH/pH_Main_St.csv", 
+    skip = 81)
+
+pH_Mendon_Rd <- read_csv("Other/Downloaded Data/datastreams_pH/pH_Mendon.csv", 
+    skip = 81)
+
+pH_Tony_Grove <- read_csv("Other/Downloaded Data/datastreams_pH/pH_Tony_Grove.csv", 
+    skip = 81)
+
+pH_Water_Lab_West_Bridge <- read_csv("Other/Downloaded Data/datastreams_pH/pH_Water_Lab.csv", 
+    skip = 81)
+```
+
+```{r}
+
+pH_Franklin <- data.frame(
+  date = pH_Franklin_Basin$ResultTime,
+  pH = pH_Franklin_Basin$Result,
+  source = "Franklin"
+)
+pH_Main_St <- data.frame(
+  date = pH_Main_St_Bridge$ResultTime,
+  pH = pH_Main_St_Bridge$Result,
+  source = "Main St"
+)
+pH_Mendon <- data.frame(
+  date = pH_Mendon_Rd$ResultTime,
+  pH = pH_Mendon_Rd$Result,
+  source = "Mendon"
+)
+pH_TonyGrove <- data.frame(
+  date = pH_Tony_Grove$ResultTime,
+  pH = pH_Tony_Grove$Result,
+  source = "Tony Grove"
+)
+pH_Water_Lab <- data.frame(
+  date = pH_Water_Lab_West_Bridge$ResultTime,
+  pH = pH_Water_Lab_West_Bridge$Result,
+  source = "Water Lab"
+)
+
+Logan_River_pH <- rbind(pH_Franklin,
+                            pH_Main_St,
+                            pH_Mendon,
+                            pH_TonyGrove,
+                            pH_Water_Lab)
+
+#Saving PH Data Set
+#save(Logan_River_pH, file = "Logan_River_pH.RData")
+```
+
+## Turbidity
+
+```{r}
+turbidity_Franklin_Basin <- read_csv("Other/Downloaded Data/datastreams_turbidity/turbidity_Franklin_Basin.csv", 
+    skip = 81)
+
+turbidity_Main_St_Bridge <- read_csv("Other/Downloaded Data/datastreams_turbidity/turbidity_Main_St.csv", 
+    skip = 81)
+
+turbidity_Mendon_Rd <- read_csv("Other/Downloaded Data/datastreams_turbidity/turbidity_Mendon.csv",
+    skip = 81)
+
+turbidity_Tony_Grove <- read_csv("Other/Downloaded Data/datastreams_turbidity/turbidity_Tony_Grove.csv", 
+    skip = 81)
+
+turbidity_Water_Lab_West_Bridge <- read_csv("Other/Downloaded Data/datastreams_turbidity/turbidity_Water_Lab.csv", 
+    skip = 81)
+```
+
+```{r}
+
+turbidity_Franklin <- data.frame(
+  date = turbidity_Franklin_Basin$ResultTime,
+  turbidity = turbidity_Franklin_Basin$Result,
+  source = "Franklin"
+)
+turbidity_Main_St <- data.frame(
+  date = turbidity_Main_St_Bridge$ResultTime,
+  turbidity = turbidity_Main_St_Bridge$Result,
+  source = "Main St"
+)
+turbidity_Mendon <- data.frame(
+  date = turbidity_Mendon_Rd$ResultTime,
+  turbidity = turbidity_Mendon_Rd$Result,
+  source = "Mendon"
+)
+turbidity_TonyGrove <- data.frame(
+  date = turbidity_Tony_Grove$ResultTime,
+  turbidity = turbidity_Tony_Grove$Result,
+  source = "Tony Grove"
+)
+turbidity_Water_Lab <- data.frame(
+  date = turbidity_Water_Lab_West_Bridge$ResultTime,
+  turbidity = turbidity_Water_Lab_West_Bridge$Result,
+  source = "Water Lab"
+)
+
+Logan_River_turbidity <- rbind(turbidity_Franklin,
+                            turbidity_Main_St,
+                            turbidity_Mendon,
+                            turbidity_TonyGrove,
+                            turbidity_Water_Lab)
+
+#Saving Turbidity Data Set
+#save(Logan_River_turbidity, file = "Logan_River_turbidity.RData")
+```
+
+## Discharge
+
+```{r}
+
+discharge_Franklin_Basin <- read_csv("Other/Downloaded Data/datastreams_discharge/discharge_Franklin_Basin.csv", 
+    skip = 81)
+
+discharge_Main_St_Bridge <- read_csv("Other/Downloaded Data/datastreams_discharge/discharge_Main_St.csv", 
+    skip = 81)
+
+discharge_Mendon_Rd <- read_csv("Other/Downloaded Data/datastreams_discharge/discharge_Mendon.csv",
+    skip = 81)
+
+discharge_Tony_Grove <- read_csv("Other/Downloaded Data/datastreams_discharge/discharge_Tony_Grove.csv", 
+    skip = 81)
+
+discharge_Water_Lab_West_Bridge <- read_csv("Other/Downloaded Data/datastreams_discharge/discharge_Water_Lab.csv", 
+    skip = 81)
+
+```
+
+```{r}
+discharge_Franklin <- data.frame(
+  date = discharge_Franklin_Basin$ResultTime,
+  discharge = discharge_Franklin_Basin$Result,
+  source = "Franklin"
+)
+discharge_Main_St <- data.frame(
+  date = discharge_Main_St_Bridge$ResultTime,
+  discharge = discharge_Main_St_Bridge$Result,
+  source = "Main St"
+)
+discharge_Mendon <- data.frame(
+  date = discharge_Mendon_Rd$ResultTime,
+  discharge = discharge_Mendon_Rd$Result,
+  source = "Mendon"
+)
+discharge_TonyGrove <- data.frame(
+  date = discharge_Tony_Grove$ResultTime,
+  discharge = discharge_Tony_Grove$Result,
+  source = "Tony Grove"
+)
+discharge_Water_Lab <- data.frame(
+  date = discharge_Water_Lab_West_Bridge$ResultTime,
+  discharge = discharge_Water_Lab_West_Bridge$Result,
+  source = "Water Lab"
+)
+
+Logan_River_discharge <- rbind(discharge_Franklin,
+                            discharge_Main_St,
+                            discharge_Mendon,
+                            discharge_TonyGrove,
+                            discharge_Water_Lab)
+
+#Saving Discharge Data Set
+#save(Logan_River_discharge, file = "Logan_River_discharge.RData")
+```
+
+## Water Level
+
+```{r}
+waterlevel_Franklin_Basin <- read_csv("Other/Downloaded Data/datastreams_waterlevel/waterlevel_Franklin_Basin.csv", 
+    skip = 81)
+
+waterlevel_Main_St_Bridge <- read_csv("Other/Downloaded Data/datastreams_waterlevel/waterlevel_Main_St.csv", 
+    skip = 81)
+
+waterlevel_Mendon_Rd <- read_csv("Other/Downloaded Data/datastreams_waterlevel/waterlevel_Mendon.csv",
+    skip = 81)
+
+waterlevel_Tony_Grove <- read_csv("Other/Downloaded Data/datastreams_waterlevel/waterlevel_Tony_Grove.csv", 
+    skip = 81)
+
+waterlevel_Water_Lab_West_Bridge <- read_csv("Other/Downloaded Data/datastreams_waterlevel/waterlevel_Water_Lab.csv", 
+    skip = 81)
+```
+
+```{r}
+waterlevel_Franklin <- data.frame(
+  date = waterlevel_Franklin_Basin$ResultTime,
+  waterlevel = waterlevel_Franklin_Basin$Result,
+  source = "Franklin"
+)
+waterlevel_Main_St <- data.frame(
+  date = waterlevel_Main_St_Bridge$ResultTime,
+  waterlevel = waterlevel_Main_St_Bridge$Result,
+  source = "Main St"
+)
+waterlevel_Mendon <- data.frame(
+  date = waterlevel_Mendon_Rd$ResultTime,
+  waterlevel = waterlevel_Mendon_Rd$Result,
+  source = "Mendon"
+)
+waterlevel_TonyGrove <- data.frame(
+  date = waterlevel_Tony_Grove$ResultTime,
+  waterlevel = waterlevel_Tony_Grove$Result,
+  source = "Tony Grove"
+)
+waterlevel_Water_Lab <- data.frame(
+  date = waterlevel_Water_Lab_West_Bridge$ResultTime,
+  waterlevel = waterlevel_Water_Lab_West_Bridge$Result,
+  source = "Water Lab"
+)
+
+Logan_River_waterlevel<- rbind(waterlevel_Franklin,
+                            waterlevel_Main_St,
+                            waterlevel_Mendon,
+                            waterlevel_TonyGrove,
+                            waterlevel_Water_Lab)
+
+#Saving Discharge Data Set
+#save(Logan_River_waterlevel, file = "Logan_River_waterlevel.RData")
+```
+
+Splitting the Data at the last 6 months
+
+```{r}
+#main file
+library(dplyr)
+Logan_River_Main <- Logan_River_discharge |>
+  full_join(Logan_River_Oxygen, by = c("date", "source")) |>
+  full_join(Logan_River_pH, by = c("date", "source")) |>
+  full_join(Logan_River_turbidity, by = c("date", "source")) |>
+  full_join(Logan_River_waterlevel, by = c("date", "source"))
+
+
+#Saving Combined Data Set
+#save(Logan_River_Main, file = "Logan_River_Main.RData")
+
+#Splitting Data set to use last two years as testing data (testing starts on 2/15/2024)
+
+library(lubridate)
+two_years <- Sys.Date() %m-% years(2)
+
+Logan_River_train <- Logan_River_Main[Logan_River_Main$date < two_years, ]
+Logan_River_test <- Logan_River_Main[Logan_River_Main$date >= two_years, ]
+
+#
+#save(Logan_River_train, file = "Logan_River_Train.RData")
+#save(Logan_River_test, file = "Logan_River_Test.RData")
+
+
+
+```

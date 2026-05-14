@@ -1,0 +1,511 @@
+---
+title: "Weekly ARIMA"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+## Document Overview
+
+When training the models, we only used one location, the Water Lab and the training data. This is because it had the most data (least NA's).
+
+We fitted two main models, one model is just the straight seasonal trend, the other included discharge. We wanted to predict the minimum level of dissolved oxygen, but the max and the mean are reported for future modeling. Each model is saved as a .rds for reference, as it took a while to run the code.
+
+With each model, we predicted the next week (this is from the test data), then retrained the model with the same parameters with the original data and the next week's data. This new model was then used to predict the next weeks data. We then repeated, retraining the model with the same parameters using the original data, and now the next two weeks' data, then predicted the next week (the third week). We repeated this for a whole year. The last year of the test data is reserved for after all the model testing as a final test.
+
+## Load Data
+
+```{r}
+#load data and packages
+library(dplyr)
+library(forecast)
+library(ggplot2)
+library(tidyr)
+library(patchwork)
+
+set.seed(123)
+load("C:/Users/emmak/Downloads/LRO_eco_forecasting/Data/Logan_River_Train.RData")
+
+load("C:/Users/emmak/Downloads/LRO_eco_forecasting/Data/Logan_River_Test.RData")
+
+
+#TRAINING, cleaning and using only the water lab location
+Logan_River_train %>%
+  group_by(source) %>%
+  summarise(n_less = sum(DO < 10, na.rm = TRUE))
+
+Logan_River_Clean <- Logan_River_train %>%
+   mutate(across(where(is.numeric),
+                ~ ifelse(. < 0, NA, .))) %>%
+  filter(grepl("Water Lab", source))
+
+summary(Logan_River_Clean)
+
+daily_DO <- Logan_River_Clean %>%
+  mutate(date = as.Date(date)) %>%
+  group_by(date) %>%
+  summarize(DO_min = min(DO, na.rm = TRUE),
+            DO_mean = mean(DO, na.rm = TRUE),
+            DO_max = max(DO, na.rm = TRUE),
+            discharge_ave = mean(discharge, na.rm = TRUE)
+            ) %>%
+  filter(is.finite(DO_min),
+         is.finite(DO_mean),
+         is.finite(DO_max),
+         is.finite(discharge_ave))
+
+#TESTING, cleaning and using only the water lab locatino
+Logan_River_test %>%
+  group_by(source) %>%
+  summarise(n_less = sum(DO < 10, na.rm = TRUE))
+
+Logan_River_Clean_Test <- Logan_River_test %>%
+   mutate(across(where(is.numeric),
+                ~ ifelse(. < 0, NA, .))) %>%
+  filter(grepl("Water Lab", source))
+
+summary(Logan_River_Clean_Test)
+
+daily_DO_Test <- Logan_River_Clean_Test %>%
+  mutate(date = as.Date(date)) %>%
+  group_by(date) %>%
+  summarize(DO_min = min(DO, na.rm = TRUE),
+            DO_mean = mean(DO, na.rm = TRUE),
+            DO_max = max(DO, na.rm = TRUE),
+            discharge_ave = mean(discharge, na.rm = TRUE)) %>%
+  filter(is.finite(DO_min),
+         is.finite(DO_mean),
+         is.finite(DO_max),
+         is.finite(discharge_ave))
+
+summary(daily_DO_Test)
+
+
+head(daily_DO_Test)
+
+```
+
+## Seasonal Model
+
+This is the model only using seasonality, with no other factors.
+
+```{r}
+#MINIMUM
+ggplot(daily_DO, aes(x = date, y = DO_min))+
+  geom_point()
+
+#Model Fitting
+  #ARIMA_min <- auto.arima(ts(daily_DO$DO_min, frequency = 365), seasonal = TRUE)
+  #summary(ARIMA_min)
+  #saveRDS(ARIMA_min, file = "ARIMA_min.rds")
+
+
+#MEAN, this model is fit, but not used in testing
+ggplot(daily_DO, aes(x = date, y = DO_mean))+
+  geom_point()
+
+#Model Fitting
+  #ARIMA_mean <- auto.arima(ts(daily_DO$DO_mean, frequency = 365), seasonal = TRUE)
+  #summary(ARIMA_mean)
+  #saveRDS(ARIMA_mean, file = "ARIMA_mean.rds")
+
+#mean one week prediction
+forecast_week_mean <- forecast(ARIMA_mean, h = 7)
+plot(forecast_week_mean)
+
+```
+
+## Predicting using Seasonal Model with RMSE
+
+```{r}
+#PREDICT
+
+forecast_min_weekly <- list()
+
+for(week in 1:52){
+    new_data <- daily_DO_Test$DO_min[seq_len((week-1)*7)]
+
+    combined <- c(daily_DO$DO_min, new_data)
+    
+    ts_data <- ts(combined, start = c(2014,1), frequency = 365)
+
+    temp_fit <- Arima(ts_data, model = ARIMA_min)
+
+    predict_seven <- predict(temp_fit, n.ahead = 7)
+    
+    forecast_min_weekly[[week]] <- data.frame(
+                             pred = predict_seven$pred,
+                             se = predict_seven$se,
+                             week = week,
+                             forecast_day = seq(1:7)
+    )
+}
+
+forecast_min_weekly_df <- bind_rows(forecast_min_weekly)
+summary(forecast_min_weekly_df)
+
+forecast_min_weekly_df <- forecast_min_weekly_df %>%
+  mutate(day = 1:n())
+
+ggplot(data = forecast_min_weekly_df, aes(x = day, y = pred))+
+  geom_line()
+```
+
+```{r}
+#RMSE of day of the week
+
+#Forecast Day Averages
+forecast_day_ave <- forecast_min_weekly_df %>%
+  mutate(
+    obs = daily_DO_Test$DO_min[1:364],
+    week = rep(1:52, each = 7),
+    day = rep(1:7, times = 52)
+  ) %>%
+  group_by(day) %>%
+  summarise(
+    rmse = sqrt(mean((obs - pred)^2, na.rm = TRUE))
+  )
+
+
+#graph
+ggplot(forecast_day_ave, aes(x = day, y = rmse))+
+  geom_point()
+```
+
+## Seasonal model with discharge: Auto ArimaX
+
+```{r}
+#Add lag (using previous week's discharge level)
+lag_df <- daily_DO %>%
+  mutate(discharge_lag = lag(discharge_ave, 7)) %>%
+  filter(!is.na(discharge_lag))
+
+#Model
+  #ARIMAX_min <- auto.arima(ts(lag_df$DO_min, frequency = 365), xreg =       lag_df$discharge_lag,  seasonal = TRUE)
+  #saveRDS(ARIMAX_min, file = "ARIMAX_min.rds")
+summary(ARIMAX_min)
+
+#Forecasting
+forx_min_weekly <- list()
+
+for(week in 1:52){
+    new_data <- daily_DO_Test$DO_min[seq_len((week-1)*7)]
+    combined <- c(lag_df$DO_min, new_data)
+    
+    newx <- lag(daily_DO_Test$discharge_ave, 7)[seq_len((week - 1) * 7)]
+    combinedx <- c(lag_df$discharge_lag, newx)
+    
+    ts_data <- ts(combined, start = c(2014,1), frequency = 365)
+    temp_fit <- Arima(ts_data, model = ARIMAX_min, xreg = combinedx)
+    
+    full_discharge <- c(daily_DO$discharge_ave,
+                      daily_DO_Test$discharge_ave[seq_len((week - 1) * 7)])
+  
+    future_xreg <- tail(full_discharge, 7)
+
+    predict_seven <- predict(temp_fit, n.ahead = 7, newxreg = future_xreg)
+    
+    forx_min_weekly[[week]] <- data.frame(
+                             pred = predict_seven$pred,
+                             se = predict_seven$se,
+                             week = week,
+                             forecast_day = seq(1:7)
+    )
+}
+
+forx_min_weekly_df <- bind_rows(forx_min_weekly)
+summary(forx_min_weekly_df)
+
+forx_min_weekly_df <- forx_min_weekly_df %>%
+  mutate(day = 1:n())
+
+ggplot(data = forx_min_weekly_df, aes(x = day, y = pred))+
+  geom_line()
+
+```
+
+```{r}
+#RMSE
+
+#Forecast Day Averages
+forx_day_ave <- forx_min_weekly_df %>%
+  mutate(
+    obs = daily_DO_Test$DO_min[1:364],
+    week = rep(1:52, each = 7),
+    day = rep(1:7, times = 52)
+  ) %>%
+  group_by(day) %>%
+  summarise(
+    rmse = sqrt(mean((obs - pred)^2, na.rm = TRUE))
+  )
+
+#graph
+ggplot(forx_day_ave, aes(x = day, y = rmse))+
+  geom_point()
+```
+
+```{r}
+
+```
+
+## Comparing Model Predictions to Actual (with CI)
+
+```{r}
+
+#Auto Arima
+forecast_min_weekly_df$obs <- daily_DO_Test$DO_min[1:364]
+forecast_min_weekly_df <- forecast_min_weekly_df %>%
+  mutate(
+    lower = pred - 1.96 * se,
+    upper = pred + 1.96 * se
+  )
+
+ggplot(forecast_min_weekly_df, aes(x = day))+
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, fill = "lightblue") +
+  geom_line(aes(x = day, y = obs), col = "black")+
+  geom_line(aes(x = day, y = pred), col = "steelblue")
+
+
+#Arimax
+forx_min_weekly_df$obs <- daily_DO_Test$DO_min[1:364]
+forx_min_weekly_df <- forx_min_weekly_df %>%
+  mutate(
+    lower = pred - 1.96 * se,
+    upper = pred + 1.96 * se
+  )
+
+ggplot(forx_min_weekly_df, aes(x = day))+
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, fill = "pink") +
+  geom_line(aes(x = day, y = obs), col = "black")+
+  geom_line(aes(x = day, y = pred), col = "red3")
+  
+
+```
+
+## Comparing Model predictions between models and Actual
+
+This uses a rolling average to smooth the lines a bit so we can actually see what is happening and compare without too much noise.
+
+```{r}
+#Atuo Arima Rolling Averages
+forecast_min_weekly_df$pred_smooth <- as.numeric(
+  stats::filter(
+    forecast_min_weekly_df$pred,
+    rep(1/7, 7),
+    sides = 1
+  )
+)
+
+forecast_min_weekly_df$obs_smooth <- as.numeric(
+  stats::filter(
+    forecast_min_weekly_df$obs,
+    rep(1/7, 7),
+    sides = 1
+  )
+)
+
+forecast_min_weekly_df$upper_smooth <- as.numeric(
+  stats::filter(
+    forecast_min_weekly_df$upper,
+    rep(1/7, 7),
+    sides = 1
+  )
+)
+
+forecast_min_weekly_df$lower_smooth <- as.numeric(
+  stats::filter(
+    forecast_min_weekly_df$lower,
+    rep(1/7, 7),
+    sides = 1
+  )
+)
+
+ggplot(forecast_min_weekly_df, aes(x = day))+
+  geom_ribbon(aes(ymin = lower_smooth, ymax = upper_smooth), alpha = 0.2, fill = "lightblue") +
+  geom_line(aes(x = day, y = obs_smooth), col = "black")+
+  geom_line(aes(x = day, y = pred_smooth), col = "steelblue")
+
+#Arimax  Rolling Averages
+forx_min_weekly_df$pred_smooth <- as.numeric(
+  stats::filter(
+    forx_min_weekly_df$pred,
+    rep(1/7, 7),
+    sides = 1
+  )
+)
+
+forx_min_weekly_df$obs_smooth <- as.numeric(
+  stats::filter(
+    forx_min_weekly_df$obs,
+    rep(1/7, 7),
+    sides = 1
+  )
+)
+
+forx_min_weekly_df$upper_smooth <- as.numeric(
+  stats::filter(
+    forx_min_weekly_df$upper,
+    rep(1/7, 7),
+    sides = 1
+  )
+)
+
+forx_min_weekly_df$lower_smooth <- as.numeric(
+  stats::filter(
+    forx_min_weekly_df$lower,
+    rep(1/7, 7),
+    sides = 1
+  )
+)
+
+ggplot(forx_min_weekly_df, aes(x = day))+
+  geom_ribbon(aes(ymin = lower_smooth, ymax = upper_smooth), alpha = 0.2, fill = "pink") +
+  geom_line(aes(x = day, y = obs_smooth), col = "black")+
+  geom_line(aes(x = day, y = pred_smooth), col = "red3")
+
+
+#Combined Graphs of both Models
+forx_min_weekly_df$model <- "Includes Discharge"
+forecast_min_weekly_df$model <- "Excludes Discharge"
+
+g1 <- ggplot() +
+  geom_ribbon(aes(x = day, ymin = lower_smooth, ymax = upper_smooth, 
+                  fill = model), 
+              data = forx_min_weekly_df, alpha = 0.2) +
+  geom_ribbon(aes(x = day, ymin = lower_smooth, ymax = upper_smooth, 
+                  fill = model), 
+              data = forecast_min_weekly_df, alpha = 0.2) +
+  geom_line(aes(x = day, y = pred, color = model), 
+            data = forx_min_weekly_df) +
+  geom_line(aes(x = day, y = pred, color = model), 
+            data = forecast_min_weekly_df) +
+  geom_line(aes(x = day, y = obs, color = "Observed"), 
+            data = forx_min_weekly_df) +
+  scale_fill_manual(values = c("Includes Discharge" = "red3", 
+                               "Excludes Discharge" = "steelblue")) +
+  scale_color_manual(values = c("Includes Discharge" = "red3", 
+                                "Excludes Discharge" = "steelblue",
+                                "Observed" = "black"
+                                )) +
+  labs(color = "Model", fill = "Confidence Interval", 
+       y = "Minimum DO (mg/L)", x = "Day of Year",
+       title = "Forecasting a Year From 2/15/2024 ")
+g1
+
+
+
+```
+
+## Discharge Graph over time
+
+```{r}
+dishcarge_df <- data.frame(
+  day = 1:364,
+  discharge = daily_DO_Test$discharge_ave[1:364]
+)
+
+g2 <- ggplot(dishcarge_df, aes(x = day, y = discharge))+
+  geom_line()+
+  labs(x = "Day of Year",
+       y = "Discharge (m^3/s)")
+```
+
+## RMSE over time
+
+```{r}
+
+library(slider)
+
+#RMSE with no discharge
+noq_rmse <- slide_dbl(
+  (forecast_min_weekly_df$obs - forecast_min_weekly_df$pred)^2,
+  ~ sqrt(mean(.x)),
+  .before = 7 - 1,
+  .complete = TRUE
+)
+
+#rmse with discharge
+q_rmse <- slide_dbl(
+  (forx_min_weekly_df$obs - forx_min_weekly_df$pred)^2,
+  ~ sqrt(mean(.x)),
+  .before = 7 - 1,
+  .complete = TRUE
+)
+
+rmse_df <- data.frame(
+  noq_rmse = noq_rmse,
+  q_rmse = q_rmse,
+  day = seq(1:364)
+)
+
+g3 <- ggplot(rmse_df, aes(x = day)) +
+  geom_line(aes(y = noq_rmse, color = "Excludes Discharge")) +
+  geom_line(aes(y = q_rmse, color = "Includes Discharge")) +
+  scale_color_manual(values = c("Excludes Discharge" = "steelblue",
+                                "Includes Discharge" = "red3"
+                                )) +
+  labs(color = "Model", y = "RMSE", x = "Day of Year")+
+  theme(legend.position = "none")
+```
+
+## Combine previous three graphs to compare over time
+
+Final graph is located under "Figures" called "Stack of Graphs"
+
+```{r}
+g1 / g2 / g3 + plot_layout(
+  axis_titles = "collect",
+  axes = "collect"
+)
+```
+
+## Compare Oxygen to Discharge With Time of Year
+
+Final graph is located under "Figures" called "Discharge and Min DO Comparison"
+
+```{r}
+#Getting day of year not as a date
+lag_df$day <- as.integer(format(lag_df$date, "%j"))
+
+#Plotting relationship of Lagged Discharge to Dissolved Oxygen Level
+ggplot(lag_df, aes(x = discharge_lag, y = DO_min, col = day))+
+  geom_point()+
+  scale_color_gradient(low = "#fdb863",
+                       high = "#542788")+
+  labs(color = "Day of Year", 
+       x = "7-Day Lagged Discharge Level",
+       y = "Minimum DO (mg/L)",
+       title = "Discharge and Minimum DO Comparison")
+```
+
+## Looking at RMSE with high Q and low Q
+
+Final graph is located under "Figures" called "Average RMSE of Week High Q v Low Q"
+
+```{r}
+df_combined <- forecast_min_weekly_df %>%
+  left_join(lag_df %>% select(day, discharge_lag), by = "day")  
+
+rmse_by_day <- df_combined %>%
+  mutate(
+    discharge_level = ifelse(discharge_lag > 10, "High", "Low"), #High discharge is above 10
+    day_of_week = forecast_day,
+    error_sq = (obs - pred)^2
+  ) %>%
+  group_by(discharge_level, day_of_week) %>%
+  summarise(rmse = sqrt(mean(error_sq, na.rm = TRUE)))
+
+
+#Plot
+ggplot(rmse_by_day, aes(x = day_of_week, y = rmse, col = discharge_level)) +
+  geom_point(cex = 3) +
+  scale_color_manual(values = c("High" = "#1b9e77", 
+                                "Low" = "#d95f02"))+
+  labs(color = "Discharge Level", x = "Forecast Day", y = "Average RMSE",
+       title = "Averaged RMSE Over Forecast Week")+
+  scale_x_continuous(breaks = seq(1,7, by = 1))
+
+
+
+```
