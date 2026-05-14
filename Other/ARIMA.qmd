@@ -1,0 +1,92 @@
+---
+title: "ARIMA"
+format: html
+editor: visual
+---
+
+## ARIMA
+
+Original exploring and fitting of the ARIMA model, did not use
+
+```{r}
+#load data and packages
+library(dplyr)
+library(forecast)
+
+set.seed(123)
+load("C:/Users/emmak/Downloads/LRO_eco_forecasting/Logan_River_Train.RData")
+
+Logan_River_Clean <- Logan_River_train %>%
+   mutate(across(where(is.numeric),
+                ~ ifelse(. < 0, NA, .))) %>%
+  filter(!grepl("Water Lab", source))
+
+summary(Logan_River_Clean)
+```
+
+## Fitting ARIMA Model without covariates
+
+```{r}
+#fit model
+fit <- auto.arima(Logan_River_Clean$DO)
+summary(fit)
+
+saveRDS(fit, file = "basic_ARIMA.rds")
+
+checkresiduals(fit)
+
+```
+
+```{r}
+
+```
+
+## Fitting ARIMA Model with Seasons
+
+```{r}
+fit <- auto.arima(Logan_River_Clean$DO)
+```
+
+## Predictions
+
+```{r}
+forecast_basic <- forecast(fit_daily, h = 730)
+forecast_season <- forecast(season_fit_daily, h = 730)
+
+plot(forecast_basic)
+plot(forecast_season)
+```
+
+## Fitting Daily ARIMA
+
+```{r}
+daily_DO <- Logan_River_Clean %>%
+  mutate(date = as.Date(date)) %>%
+  group_by(date, source) %>%
+  summarize(DO = mean(DO, na.rm = TRUE))
+
+summary(daily_DO)
+```
+
+```{r}
+fit_daily <- auto.arima(ts(daily_DO$DO, frequency = 365), seasonal = FALSE)
+summary(fit_daily)
+
+saveRDS(fit_daily, file = "daily_ARIMA.rds")
+
+checkresiduals(fit_daily)
+
+```
+
+## Seasonal Daily
+
+```{r}
+season_fit_daily <- auto.arima(ts(daily_DO$DO, frequency = 365), seasonal = TRUE)
+#add xreg for source and month, pick one site and predict that
+summary(season_fit_daily)
+
+
+saveRDS(season_fit_daily, file = "ARIMA_daily_season.rds")
+
+acf(ts(daily_DO$DO, frequency = 365), na.action = na.omit)
+```

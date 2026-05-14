@@ -1,0 +1,441 @@
+---
+title: "Exploring Data"
+format: html
+editor: visual
+---
+
+## Overview of Document
+
+The training data was then cleaned somewhat to take care of the NA values, which are represented by -9999. It was then visualized in a dot plot.
+
+## Upload
+
+```{r}
+load("C:/Users/emmak/Downloads/LRO_eco_forecasting/Data/Logan_River_Train.RData")
+
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(plotly)
+
+```
+
+## Oxygen
+
+```{r}
+#isolating on one dataset
+oxygen <- data.frame(
+  date = Logan_River_train$date,
+  DO = Logan_River_train$DO,
+  source = Logan_River_train$source
+)
+
+#remove -9999 values
+oxygen <- oxygen %>%
+  filter(!grepl(-9999, DO))
+
+summary(oxygen$DO)
+
+#remove times, only look at the day
+oxygen$day <- as.Date(oxygen$date)
+
+#overall median of all locations
+oxygen_daily_med <- aggregate(
+  DO ~ day,
+  data = oxygen,
+  FUN = median,
+  na.rm = TRUE
+)
+
+#medians of specific locations
+oxygen_daily_med_Franklin <- aggregate(
+  DO ~ day,
+  subset = source == "Franklin",
+  data = oxygen,
+  FUN = median,
+  na.rm = TRUE
+)
+
+oxygen_daily_med_Mendon <- aggregate(
+  DO ~ day,
+  subset = source == "Mendon",
+  data = oxygen,
+  FUN = median,
+  na.rm = TRUE
+)
+
+oxygen_daily_med_Main_St <- aggregate(
+  DO ~ day,
+  subset = source == "Main St",
+  data = oxygen,
+  FUN = median,
+  na.rm = TRUE
+)
+
+oxygen_daily_med_Tony_Grove <- aggregate(
+  DO ~ day,
+  subset = source == "Tony Grove",
+  data = oxygen,
+  FUN = median,
+  na.rm = TRUE
+)
+
+oxygen_daily_med_Water_Lab <- aggregate(
+  DO ~ day,
+  subset = source == "Water Lab",
+  data = oxygen,
+  FUN = median,
+  na.rm = TRUE
+)
+
+#distributino of overall medians
+hist(oxygen_daily_med$DO)
+
+#plot of overall medians over time
+ggplot(oxygen_daily_med, aes(x = day, y = DO))+
+  geom_point()
+ggplotly()
+
+#plot of medians for each location over time
+ggplot()+
+  geom_point(data = oxygen_daily_med_Franklin, 
+             aes(x = day, y = DO), color = "red")+
+  geom_point(data = oxygen_daily_med_Mendon, 
+             aes(x = day, y = DO), color = "green")+
+  geom_point(data = oxygen_daily_med_Main_St, 
+             aes(x = day, y = DO), color = "blue")+
+  geom_point(data = oxygen_daily_med_Tony_Grove, 
+             aes(x = day, y = DO), color = "orange")+
+  geom_point(data = oxygen_daily_med_Water_Lab,
+             aes(x = day, y =DO), color = "purple")
+
+
+```
+
+## Discharge
+
+```{r}
+discharge <- data.frame(
+  date = Logan_River_train$date,
+  cmps = Logan_River_train$discharge ,
+  source = Logan_River_train$source
+)
+
+discharge <- discharge %>%
+  filter(!grepl("Water Lab", source), cmps > 0)
+
+summary(discharge$cmps)
+
+discharge$day <- as.Date(discharge$date)
+
+discharge_daily_med <- aggregate(
+  cmps ~ day,
+  data = discharge,
+  FUN = median,
+  na.rm = TRUE
+)
+
+discharge_daily_med_Franklin <- aggregate(
+  cmps ~ day,
+  subset = source == "Franklin",
+  data = discharge,
+  FUN = median,
+  na.rm = TRUE
+)
+
+discharge_daily_med_Mendon <- aggregate(
+  cmps ~ day,
+  subset = source == "Mendon",
+  data = discharge,
+  FUN = median,
+  na.rm = TRUE
+)
+
+discharge_daily_med_Main_St <- aggregate(
+  cmps ~ day,
+  subset = source == "Main St",
+  data = discharge,
+  FUN = median,
+  na.rm = TRUE
+)
+
+discharge_daily_med_Tony_Grove <- aggregate(
+  cmps ~ day,
+  subset = source == "Tony Grove",
+  data = discharge,
+  FUN = median,
+  na.rm = TRUE
+)
+
+discharge_daily_med_Water_Lab <- aggregate(
+  cmps ~ day,
+  subset = source == "Water Lab",
+  data = discharge,
+  FUN = median,
+  na.rm = TRUE
+)
+
+hist(discharge_daily_med$cmps)
+
+ggplot(discharge_daily_med, aes(x = day, y = cmps))+
+  geom_point()
+ggplotly()
+
+ggplot()+
+  geom_point(data = discharge_daily_med_Franklin, 
+             aes(x = day, y = cmps), color = "red")+
+  geom_point(data = discharge_daily_med_Mendon, 
+             aes(x = day, y = cmps), color = "green")+
+  geom_point(data = discharge_daily_med_Main_St, 
+             aes(x = day, y = cmps), color = "blue")+
+  geom_point(data = discharge_daily_med_Tony_Grove, 
+             aes(x = day, y = cmps), color = "orange")+
+  geom_point(data = discharge_daily_med_Water_Lab, 
+             aes(x = day, y = cmps), color = "purple")
+```
+
+## pH
+
+```{r}
+pH <- data.frame(
+  date = Logan_River_train$date,
+  level = Logan_River_train$pH,
+  source = Logan_River_train$source
+)
+
+pH <- pH %>%
+  filter(!grepl("Water Lab", source), level > 0)
+
+
+summary(pH$level)
+
+pH$day <- as.Date(pH$date)
+
+ph_daily_med <- aggregate(
+  level ~ day,
+  data = pH,
+  FUN = median,
+  na.rm = TRUE
+)
+
+pH_daily_med_Franklin <- aggregate(
+  level ~ day,
+  subset = source == "Franklin",
+  data = pH,
+  FUN = median,
+  na.rm = TRUE
+)
+
+pH_daily_med_Mendon <- aggregate(
+  level ~ day,
+  subset = source == "Mendon",
+  data = pH,
+  FUN = median,
+  na.rm = TRUE
+)
+
+pH_daily_med_Main_St <- aggregate(
+  level ~ day,
+  subset = source == "Main St",
+  data = pH,
+  FUN = median,
+  na.rm = TRUE
+)
+
+pH_daily_med_Tony_Grove <- aggregate(
+  level ~ day,
+  subset = source == "Tony Grove",
+  data = pH,
+  FUN = median,
+  na.rm = TRUE
+)
+
+pH_daily_med_Water_Lab <- aggregate(
+  level ~ day,
+  subset = source == "Water Lab",
+  data = pH,
+  FUN = median,
+  na.rm = TRUE
+)
+
+hist(ph_daily_med$level)
+
+ggplot(ph_daily_med, aes(x = day, y = level))+
+  geom_point()
+
+ggplot()+
+  geom_point(data = pH_daily_med_Franklin, 
+             aes(x = day, y = level), color = "red")+
+  geom_point(data = pH_daily_med_Mendon, 
+             aes(x = day, y = level), color = "green")+
+  geom_point(data = pH_daily_med_Main_St, 
+             aes(x = day, y = level), color = "blue")+
+  geom_point(data = pH_daily_med_Tony_Grove, 
+             aes(x = day, y = level), color = "orange")+
+  geom_point(data = pH_daily_med_Water_Lab, 
+             aes(x = day, y = level), color = "purple")
+```
+
+## Turbidity
+
+```{r}
+turbidity <- data.frame(
+  date = Logan_River_train$date,
+  NTU = Logan_River_train$turbidity,
+  source = Logan_River_train$source
+)
+
+turbidity <- turbidity %>%
+  filter(!grepl("Water Lab", source), NTU > 0)
+
+summary(turbidity$NTU)
+
+turbidity$day <- as.Date(turbidity$date)
+
+turbidity_daily_med <- aggregate(
+  NTU ~ day,
+  data = turbidity,
+  FUN = median,
+  na.rm = TRUE
+)
+
+turbidity_daily_med_Franklin <- aggregate(
+  NTU ~ day,
+  subset = source == "Franklin",
+  data = turbidity,
+  FUN = median,
+  na.rm = TRUE
+)
+
+turbidity_daily_med_Mendon <- aggregate(
+  NTU ~ day,
+  subset = source == "Mendon",
+  data = turbidity,
+  FUN = median,
+  na.rm = TRUE
+)
+
+turbidity_daily_med_Main_St <- aggregate(
+  NTU ~ day,
+  subset = source == "Main St",
+  data = turbidity,
+  FUN = median,
+  na.rm = TRUE
+)
+
+turbidity_daily_med_Tony_Grove <- aggregate(
+  NTU ~ day,
+  subset = source == "Tony Grove",
+  data = turbidity,
+  FUN = median,
+  na.rm = TRUE
+)
+
+turbidity_daily_med_Water_Lab <- aggregate(
+  NTU ~ day,
+  subset = source == "Water Lab",
+  data = turbidity,
+  FUN = median,
+  na.rm = TRUE
+)
+
+hist(turbidity_daily_med$NTU)
+
+ggplot(turbidity_daily_med, aes(x = day, y = NTU))+
+  geom_point()
+ggplotly()
+
+ggplot()+
+  geom_point(data = turbidity_daily_med_Franklin, 
+             aes(x = day, y = NTU), color = "red")+
+  geom_point(data = turbidity_daily_med_Mendon, 
+             aes(x = day, y = NTU), color = "green")+
+  geom_point(data = turbidity_daily_med_Main_St, 
+             aes(x = day, y = NTU), color = "blue")+
+  geom_point(data = turbidity_daily_med_Tony_Grove, 
+             aes(x = day, y = NTU), color = "orange")+
+  geom_point(data = turbidity_daily_med_Water_Lab, 
+             aes(x = day, y = NTU), color = "purple")
+```
+
+## Water Level
+
+```{r}
+waterlevel <- data.frame(
+  date = Logan_River_train$date,
+  feet = Logan_River_train$waterlevel,
+  source = Logan_River_train$source
+)
+
+waterlevel <- waterlevel %>%
+  filter(!grepl("Water Lab", source), feet > 0)
+
+summary(waterlevel$feet)
+
+waterlevel$day <- as.Date(waterlevel$date)
+
+waterlevel_daily_med <- aggregate(
+  feet~ day,
+  data = waterlevel,
+  FUN = median,
+  na.rm = TRUE
+)
+
+waterlevel_daily_med_Franklin <- aggregate(
+  feet ~ day,
+  subset = source == "Franklin",
+  data = waterlevel,
+  FUN = median,
+  na.rm = TRUE
+)
+
+waterlevel_daily_med_Mendon <- aggregate(
+  feet ~ day,
+  subset = source == "Mendon",
+  data = waterlevel,
+  FUN = median,
+  na.rm = TRUE
+)
+
+waterlevel_daily_med_Main_St <- aggregate(
+  feet ~ day,
+  subset = source == "Main St",
+  data = waterlevel,
+  FUN = median,
+  na.rm = TRUE
+)
+
+waterlevel_daily_med_Tony_Grove <- aggregate(
+  feet ~ day,
+  subset = source == "Tony Grove",
+  data = waterlevel,
+  FUN = median,
+  na.rm = TRUE
+)
+
+waterlevel_daily_med_Water_Lab <- aggregate(
+  feet ~ day,
+  subset = source == "Water Lab",
+  data = waterlevel,
+  FUN = median,
+  na.rm = TRUE
+)
+
+hist(waterlevel_daily_med$feet)
+
+ggplot(waterlevel_daily_med, aes(x = day, y = feet))+
+  geom_point()
+ggplotly()
+
+ggplot()+
+  geom_point(data = waterlevel_daily_med_Franklin, 
+             aes(x = day, y = feet), color = "red")+
+  geom_point(data = waterlevel_daily_med_Mendon, 
+             aes(x = day, y = feet), color = "green")+
+  geom_point(data = waterlevel_daily_med_Main_St, 
+             aes(x = day, y = feet), color = "blue")+
+  geom_point(data = waterlevel_daily_med_Tony_Grove, 
+             aes(x = day, y = feet), color = "orange")+
+  geom_point(data = waterlevel_daily_med_Water_Lab, 
+             aes(x = day, y = feet), color = "purple")
+```
