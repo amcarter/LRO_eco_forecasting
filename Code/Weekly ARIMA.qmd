@@ -96,9 +96,12 @@ ggplot(daily_DO, aes(x = date, y = DO_min))+
   geom_point()
 
 #Model Fitting
-  #ARIMA_min <- auto.arima(ts(daily_DO$DO_min, frequency = 365), seasonal = TRUE)
-  #summary(ARIMA_min)
-  #saveRDS(ARIMA_min, file = "ARIMA_min.rds")
+  # ARIMA_min <- auto.arima(ts(daily_DO$DO_min, frequency = 365), seasonal = TRUE)
+  # summary(ARIMA_min)
+  # saveRDS(ARIMA_min, file = "ARIMA_min.rds")
+  
+#   forecast_week_min <- forecast(ARIMA_min, h = 7)
+# plot(forecast_week_min)
 
 
 #MEAN, this model is fit, but not used in testing
