@@ -273,11 +273,19 @@ summary(ARIMAX_Franklin_min)
 
 
 ###ARIMAX FUNCTION
-library(fourier)
+library(forecast)
+library(dplyr)
+library(tidyverse)
 
 arimamodel <- function(K, freq, lag_df, lagged_covariates){
   min_ts <- ts(lag_df$DO_min, frequency = freq)
   fourier_terms <- fourier(min_ts, K = K)
+
+    #this command I just added in, if it breaks look here first. 
+  #I am trying to make it so the dataframe doesn't have to have lagged cols yet.
+  # lag_df <- lag_df %>%
+  #   mutate(lag_df[lagged_covariates] = lag(lag_df[lagged_covariates], 7)) %>%
+  #   filter(!is.na(lag_df[lagged_covariates]))
   
     xreg <- cbind(
       discharge_lag = as.matrix(lag_df[lagged_covariates]),
@@ -293,3 +301,10 @@ arimamodel <- function(K, freq, lag_df, lagged_covariates){
 }
 
 arimamodel(1, 365, lag_df, lagged_covariates)
+
+
+
+
+###PREDICTION FUNCTION
+
+
