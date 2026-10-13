@@ -122,15 +122,17 @@ ggplot(daily_DO, aes(x = date, y = DO_mean))+
 forecast_min_weekly <- list()
 
 for(week in 1:52){
-  new_data <- daily_DO_Test$DO_min[seq_len((week-1)*7)]
+  new_data <- daily_DO_Test$DO_min[seq_len((week-1)*7)] #make dataframe to add in covariate data?
   
   combined <- c(daily_DO$DO_min, new_data)
   
   ts_data <- ts(combined, start = c(2014,1), frequency = 365)
   
-  temp_fit <- Arima(ts_data, model = ARIMA_Franklin_min)
+  temp_fit <- Arima(ts_data, model = ARIMA_Franklin_min) #make sure that argument y= new week of y data, 
+  #and xreg = new x predictors (discharge, etc...)
   
-  predict_seven <- predict(temp_fit, n.ahead = 7)
+  predict_seven <- predict(temp_fit, n.ahead = 7) #predict function isn't flexible enough to 
+ #add in an argument newxreg for things like discharge, that are x covariates
   
   forecast_min_weekly[[week]] <- data.frame(
     pred = predict_seven$pred,
@@ -199,6 +201,8 @@ for(week in 1:52){
   
   ts_data <- ts(combined, start = c(2014,1), frequency = 365)
   temp_fit <- Arima(ts_data, model = ARIMAX_Franklin_min, xreg = combinedx)
+  # y should be a column turned into a time series
+  #xreg can be a data frame? or a matrix. 
   
   full_discharge <- c(daily_DO$discharge_ave,
                       daily_DO_Test$discharge_ave[seq_len((week - 1) * 7)])
