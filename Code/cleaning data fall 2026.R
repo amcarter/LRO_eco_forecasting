@@ -2,19 +2,19 @@ library(readr)
 
 ## OXYGEN ##
 
-O2_Franklin_Basin <- read_csv("LRO Data August/Franklin Basin/fb_disox.csv", 
+O2_Franklin_Basin <- read_csv("LRO_Data_August/Franklin Basin/fb_disox.csv", 
                               skip = 81)
 
-O2_Main_St <- read_csv("LRO Data August/Main Street/ms_disox.csv", 
+O2_Main_St <- read_csv("LRO_Data_August/Main Street/ms_disox.csv", 
                        skip = 81)
 
-O2_Mendon_Rd <- read_csv("LRO Data August/Mendon Rd/mr_disox.csv", 
+O2_Mendon_Rd <- read_csv("LRO_Data_August/Mendon Rd/mr_disox.csv", 
                       skip = 81)
 
-O2_Tony_Grove <- read_csv("LRO Data August/Tony Grove/tg_disox.csv", 
+O2_Tony_Grove <- read_csv("LRO_Data_August/Tony Grove/tg_disox.csv", 
                           skip = 81)
 
-O2_Water_Lab_West_Bridge <- read_csv("LRO Data August/Water Lab/wl_disox.csv", 
+O2_Water_Lab_West_Bridge <- read_csv("LRO_Data_August/Water Lab/wl_disox.csv", 
                          skip = 81)
 
 
@@ -58,19 +58,19 @@ Logan_River_Oxygen <- rbind(Oxygen_Franklin,
 
 ## PH ##
 
-pH_Franklin_Basin <- read_csv("LRO Data August/Franklin Basin/fb_ph.csv", 
+pH_Franklin_Basin <- read_csv("LRO_Data_August/Franklin Basin/fb_ph.csv", 
                               skip = 81)
 
-pH_Main_St <- read_csv("LRO Data August/Main Street/ms_ph.csv", 
+pH_Main_St <- read_csv("LRO_Data_August/Main Street/ms_ph.csv", 
                               skip = 81)
 
-pH_Mendon_Rd <- read_csv("LRO Data August/Mendon Rd/mr_ph.csv", 
+pH_Mendon_Rd <- read_csv("LRO_Data_August/Mendon Rd/mr_ph.csv", 
                          skip = 81)
 
-pH_Tony_Grove <- read_csv("LRO Data August/Tony Grove/tg_ph.csv", 
+pH_Tony_Grove <- read_csv("LRO_Data_August/Tony Grove/tg_ph.csv", 
                           skip = 81)
 
-pH_Water_Lab_West_Bridge <- read_csv("LRO Data August/Water Lab/wl_ph.csv", 
+pH_Water_Lab_West_Bridge <- read_csv("LRO_Data_August/Water Lab/wl_ph.csv", 
                                      skip = 81)
 
 pH_Franklin <- data.frame(
@@ -112,19 +112,19 @@ Logan_River_pH <- rbind(pH_Franklin,
 
 ## Turbidity ##
 
-turbidity_Franklin_Basin <- read_csv("LRO Data August/Franklin Basin/fb_turb.csv", 
+turbidity_Franklin_Basin <- read_csv("LRO_Data_August/Franklin Basin/fb_turb.csv", 
                                      skip = 81)
 
-turbidity_Main_St <- read_csv("LRO Data August/Main Street/ms_turb.csv", 
+turbidity_Main_St <- read_csv("LRO_Data_August/Main Street/ms_turb.csv", 
                                      skip = 81)
 
-turbidity_Mendon_Rd <- read_csv("LRO Data August/Mendon Rd/mr_turb.csv",
+turbidity_Mendon_Rd <- read_csv("LRO_Data_August/Mendon Rd/mr_turb.csv",
                                 skip = 81)
 
-turbidity_Tony_Grove <- read_csv("LRO Data August/Tony Grove/tg_turb.csv", 
+turbidity_Tony_Grove <- read_csv("LRO_Data_August/Tony Grove/tg_turb.csv", 
                                  skip = 81)
 
-turbidity_Water_Lab_West_Bridge <- read_csv("LRO Data August/Water Lab/wl_turb.csv", 
+turbidity_Water_Lab_West_Bridge <- read_csv("LRO_Data_August/Water Lab/wl_turb.csv", 
                                             skip = 81)
 
 
@@ -167,19 +167,19 @@ Logan_River_turbidity <- rbind(turbidity_Franklin,
 
 ## Discharge ##
 
-discharge_Franklin_Basin <- read_csv("LRO Data August/Franklin Basin/fb_discharge.csv", 
+discharge_Franklin_Basin <- read_csv("LRO_Data_August/Franklin Basin/fb_discharge.csv", 
                                      skip = 81)
 
-discharge_Main_St <- read_csv("LRO Data August/Main Street/ms_discharge.csv", 
+discharge_Main_St <- read_csv("LRO_Data_August/Main Street/ms_discharge.csv", 
                                      skip = 81)
 
-discharge_Mendon_Rd <- read_csv("LRO Data August/Mendon Rd/mr_discharge.csv",
+discharge_Mendon_Rd <- read_csv("LRO_Data_August/Mendon Rd/mr_discharge.csv",
                                 skip = 81)
 
-discharge_Tony_Grove <- read_csv("LRO Data August/Tony Grove/tg_discharge.csv", 
+discharge_Tony_Grove <- read_csv("LRO_Data_August/Tony Grove/tg_discharge.csv", 
                                  skip = 81)
 
-discharge_Water_Lab_West_Bridge <- read_csv("LRO Data August/Water Lab/wl_discharge.csv", 
+discharge_Water_Lab_West_Bridge <- read_csv("LRO_Data_August/Water Lab/wl_discharge.csv", 
                                             skip = 81)
 
 discharge_Franklin <- data.frame(
@@ -222,19 +222,19 @@ Logan_River_discharge <- rbind(discharge_Franklin,
 
 ## water temp ##
 
-watertemp_Franklin_Basin <- read_csv("LRO Data August/Franklin Basin/fb_watertemp.csv", 
+watertemp_Franklin_Basin <- read_csv("LRO_Data_August/Franklin Basin/fb_watertemp.csv", 
                                       skip = 81)
 
-watertemp_Main_St <- read_csv("LRO Data August/Main Street/ms_watertemp.csv", 
+watertemp_Main_St <- read_csv("LRO_Data_August/Main Street/ms_watertemp.csv", 
                                       skip = 81)
 
-watertemp_Mendon_Rd <- read_csv("LRO Data August/Mendon Rd/mr_watertemp.csv",
+watertemp_Mendon_Rd <- read_csv("LRO_Data_August/Mendon Rd/mr_watertemp.csv",
                                  skip = 81)
 
-watertemp_Tony_Grove <- read_csv("LRO Data August/Tony Grove/tg_watertemp.csv", 
+watertemp_Tony_Grove <- read_csv("LRO_Data_August/Tony Grove/tg_watertemp.csv", 
                                   skip = 81)
 
-watertemp_Water_Lab_West_Bridge <- read_csv("LRO Data August/Water Lab/wl_watertemp.csv", 
+watertemp_Water_Lab_West_Bridge <- read_csv("LRO_Data_August/Water Lab/wl_watertemp.csv", 
                                              skip = 81)
 
 watertemp_Franklin <- data.frame(
@@ -287,7 +287,7 @@ Logan_River_Main_Updated <- Logan_River_discharge |>
 
 
 #adding in the Franklin Basin PAR data
-Franklin_Basin_PAR <-  read_csv("LRO Data August/Franklin Basin/fb_incoming_PAR.csv", 
+Franklin_Basin_PAR <-  read_csv("LRO_Data_August/Franklin Basin/fb_incoming_PAR.csv", 
                                 skip = 81)[,-3]
 
 PAR_Franklin <- data.frame(

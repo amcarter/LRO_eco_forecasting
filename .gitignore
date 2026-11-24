@@ -1,5 +1,9 @@
 .Rproj.user
 .Rhistory
 .Ruserdata
+LRO_Data_August
 Data/model fits
 Figures
+*.csv
+*.RDataTmp*
+*.RData
